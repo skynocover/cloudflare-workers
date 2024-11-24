@@ -1,0 +1,43 @@
+{
+  "name": "my-next-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "deploy": "cloudflare && wrangler deploy",
+    "preview": "cloudflare && wrangler dev",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
+    "dev:local": "wrangler dev --env development",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply akraft-d1-local --local",
+    "db:update:local": "pnpm db:generate && pnpm db:migrate:local",
+    "db:migrate": "wrangler d1 migrations apply akraft-d1",
+    "db:update": "pnpm db:generate && pnpm db:migrate",
+    "db:push": "wrangler d1 push akraft-d1-local"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.36.4",
+    "next": "14.2.5",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241112.0",
+    "@opennextjs/cloudflare": "^0.2.1",
+    "@opentelemetry/api": "^1.9.0",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "critters": "^0.0.25",
+    "drizzle-kit": "^0.28.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.5",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5",
+    "wrangler": "^3.90.0"
+  }
+}
