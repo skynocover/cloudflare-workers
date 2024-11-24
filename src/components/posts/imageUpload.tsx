@@ -1,17 +1,18 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { TitleInputDialog } from '@/components/posts/titleInput';
+import { getImages, uploadImage } from '@/app/actions/images';
 
 interface ImageInfo {
   id: string;
-  file: File;
-  preview: string;
+  //   file: File;
+  //   preview: string;
   title: string;
   url: string;
   aiAnalysis: string;
@@ -22,6 +23,22 @@ export default function ImageUploadGallery() {
   const [images, setImages] = useState<ImageInfo[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentFile, setCurrentFile] = useState<File | null>(null);
+
+  const fetchImages = async () => {
+    const images = await getImages();
+    // console.log('🚀 ~ file: imageUpload.tsx:30 ~ fetchImages ~ images:', images);
+    setImages(
+      images.map((img) => ({
+        ...img,
+        id: img.id.toString(),
+        violatesRules: !!img.violatesRules,
+      })),
+    );
+  };
+
+  useEffect(() => {
+    fetchImages();
+  }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setCurrentFile(acceptedFiles[0]);
@@ -36,23 +53,23 @@ export default function ImageUploadGallery() {
     );
   };
 
-  const handleDialogClose = (title: string | null) => {
+  const handleDialogClose = async (title: string | null) => {
     setDialogOpen(false);
     if (title && currentFile) {
       const reader = new FileReader();
-      reader.onload = () => {
-        setImages((prevImages) => [
-          ...prevImages,
-          {
-            id: Math.random().toString(36).substr(2, 9),
-            file: currentFile,
-            preview: reader.result as string,
-            title,
-            url: URL.createObjectURL(currentFile),
-            aiAnalysis: 'AI分析中...',
-            violatesRules: false,
-          },
-        ]);
+      reader.onload = async () => {
+        const base64Image = reader.result as string;
+
+        // 上傳圖片
+        await uploadImage({
+          title,
+          base64Image,
+          contentType: currentFile.type,
+          aiAnalysis: 'AI分析中...',
+          violatesRules: false,
+        });
+
+        fetchImages();
       };
       reader.readAsDataURL(currentFile);
     }
@@ -105,7 +122,7 @@ export default function ImageUploadGallery() {
             <CardContent className="space-y-4">
               <div className="aspect-video relative">
                 <Image
-                  src={image.preview}
+                  src={image.url}
                   alt={image.title || '上傳的圖片'}
                   fill
                   className="object-cover rounded-md"
