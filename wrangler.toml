@@ -26,6 +26,8 @@ id = "local"
 binding = "AKRAFT_R2"
 bucket_name = "local"
 
+[ai]
+binding = "AI"
 
 # Automatically place your workloads in an optimal location to minimize latency.
 # If you are running back-end logic in a Pages Function, running it closer to your back-end infrastructure

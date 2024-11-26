@@ -12,6 +12,7 @@ export const GET = async (req: Request, context: any) => {
     return new Response(object.body, {
       headers: {
         'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream',
+        etag: object.httpEtag,
       },
     });
   } catch (error) {

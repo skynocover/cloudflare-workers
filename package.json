@@ -10,7 +10,7 @@
     "deploy": "cloudflare && wrangler deploy",
     "preview": "cloudflare && wrangler dev",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
-    "dev:local": "wrangler dev --env development",
+    "dev:local": "wrangler dev",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply akraft-d1-local --local",
     "db:update:local": "pnpm db:generate && pnpm db:migrate:local",

@@ -4,5 +4,6 @@ interface CloudflareEnv {
 	AKRAFT_KV: KVNamespace;
 	AKRAFT_R2: R2Bucket;
 	AKRAFT_D1: D1Database;
+	AI: Ai;
 	ASSETS: Fetcher;
 }

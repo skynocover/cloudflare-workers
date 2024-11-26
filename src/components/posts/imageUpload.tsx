@@ -7,12 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { TitleInputDialog } from '@/components/posts/titleInput';
-import { getImages, uploadImage } from '@/app/actions/images';
+import { getImages, uploadImage, deleteImage } from '@/app/actions/images';
 
 interface ImageInfo {
   id: string;
-  //   file: File;
-  //   preview: string;
   title: string;
   url: string;
   aiAnalysis: string;
@@ -26,7 +24,6 @@ export default function ImageUploadGallery() {
 
   const fetchImages = async () => {
     const images = await getImages();
-    // console.log('🚀 ~ file: imageUpload.tsx:30 ~ fetchImages ~ images:', images);
     setImages(
       images.map((img) => ({
         ...img,
@@ -65,7 +62,6 @@ export default function ImageUploadGallery() {
           title,
           base64Image,
           contentType: currentFile.type,
-          aiAnalysis: 'AI分析中...',
           violatesRules: false,
         });
 
@@ -91,6 +87,14 @@ export default function ImageUploadGallery() {
         ),
       );
     }, 1500);
+  };
+
+  const handleDelete = async (imageUrl: string) => {
+    const result = await deleteImage(imageUrl);
+    if (result.success) {
+      // 重新獲取圖片列表以更新UI
+      fetchImages();
+    }
   };
 
   return (
@@ -132,8 +136,11 @@ export default function ImageUploadGallery() {
               <p className="text-sm">AI分析: {image.aiAnalysis}</p>
               <p className="text-sm">是否違反規則: {image.violatesRules ? '是' : '否'}</p>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex justify-between">
               <Button onClick={() => simulateAIAnalysis(image.id)}>進行AI分析</Button>
+              <Button variant="destructive" onClick={() => handleDelete(image.url)}>
+                刪除
+              </Button>
             </CardFooter>
           </Card>
         ))}
