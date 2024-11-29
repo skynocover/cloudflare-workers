@@ -6,12 +6,18 @@ import { getDB } from '@/database/index';
 import { imagesTable } from '@/database/schema';
 import { getR2 } from '@/lib/R2';
 import { analyzeImageByAPI } from '@/lib/AI';
+// import { checkNSFW } from '@/lib/nsfwjs';
+import { checkNSFW } from '@/lib/nsfwjs-node';
+import { resizeImage } from '@/lib/resizeImage';
+import sharp from 'sharp';
+// import * as tf from '@tensorflow/tfjs';
+import * as nsfwjs from 'nsfwjs';
+import { azureContentSafety } from '@/lib/azure-content-safety';
 
 interface UploadImageParams {
   title: string;
   base64Image: string;
   contentType: string;
-  violatesRules: boolean;
 }
 
 export const getImages = async () => {
@@ -20,20 +26,25 @@ export const getImages = async () => {
   return images;
 };
 
-export async function uploadImage({
-  title,
-  base64Image,
-  contentType,
-  violatesRules,
-}: UploadImageParams) {
+export async function uploadImage({ title, base64Image, contentType }: UploadImageParams) {
   try {
     // 確保 base64Image 是正確的格式
     const base64Data = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
 
+    const { isNSFW, details } = await azureContentSafety(base64Data);
+    // console.log({ isNSFW, details });
+    // return;
+
     // 使用 Uint8Array 替代 Buffer
     const imageData = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
 
-    const aiAnalysis = await analyzeImageByAPI(imageData);
+    // // 如果圖片被判定為 NSFW，拒絕上傳
+    // if (nsfwResult.isNSFW) {
+    //   return {
+    //     success: false,
+    //     error: 'Image contains inappropriate content',
+    //   };
+    // }
 
     // 生成唯一的檔案名稱
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
@@ -53,8 +64,8 @@ export async function uploadImage({
     await db.insert(imagesTable).values({
       title,
       url: imageUrl,
-      aiAnalysis: aiAnalysis,
-      violatesRules: violatesRules ? 1 : 0,
+      aiAnalysis: JSON.stringify(details),
+      violatesRules: isNSFW ? 1 : 0,
     });
   } catch (error) {
     console.error('Upload failed:', error);

@@ -44,12 +44,6 @@ export default function ImageUploadGallery() {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
-  const handleInputChange = (id: string, field: keyof ImageInfo, value: string | boolean) => {
-    setImages((prevImages) =>
-      prevImages.map((img) => (img.id === id ? { ...img, [field]: value } : img)),
-    );
-  };
-
   const handleDialogClose = async (title: string | null) => {
     setDialogOpen(false);
     if (title && currentFile) {
@@ -57,12 +51,15 @@ export default function ImageUploadGallery() {
       reader.onload = async () => {
         const base64Image = reader.result as string;
 
-        // 上傳圖片
+        // 創建一個 Image 物件
+        // const result = await classifyImage(base64Image);
+        // console.log('🚀 ~ file: imageUpload.tsx:57 ~ reader.onload= ~ result:', result);
+
+        // 上傳圖片;
         await uploadImage({
           title,
           base64Image,
           contentType: currentFile.type,
-          violatesRules: false,
         });
 
         fetchImages();
@@ -70,23 +67,6 @@ export default function ImageUploadGallery() {
       reader.readAsDataURL(currentFile);
     }
     setCurrentFile(null);
-  };
-
-  // Simulating AI analysis (replace with actual API call in production)
-  const simulateAIAnalysis = (id: string) => {
-    setTimeout(() => {
-      setImages((prevImages) =>
-        prevImages.map((img) =>
-          img.id === id
-            ? {
-                ...img,
-                aiAnalysis: '這是一張' + (Math.random() > 0.5 ? '安全' : '不安全') + '的圖片。',
-                violatesRules: Math.random() > 0.7,
-              }
-            : img,
-        ),
-      );
-    }, 1500);
   };
 
   const handleDelete = async (imageUrl: string) => {
@@ -114,13 +94,7 @@ export default function ImageUploadGallery() {
           <Card key={image.id} className="overflow-hidden">
             <CardHeader>
               <CardTitle>
-                <Input
-                  type="text"
-                  placeholder="標題"
-                  value={image.title}
-                  onChange={(e) => handleInputChange(image.id, 'title', e.target.value)}
-                  className="w-full"
-                />
+                <Input type="text" placeholder="標題" value={image.title} className="w-full" />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -137,7 +111,6 @@ export default function ImageUploadGallery() {
               <p className="text-sm">是否違反規則: {image.violatesRules ? '是' : '否'}</p>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button onClick={() => simulateAIAnalysis(image.id)}>進行AI分析</Button>
               <Button variant="destructive" onClick={() => handleDelete(image.url)}>
                 刪除
               </Button>
